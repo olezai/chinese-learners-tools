@@ -1,4 +1,5 @@
 import argparse
+import csv
 import json
 from pathlib import Path
 import sys
@@ -59,6 +60,18 @@ def query_hsk(
     return results
 
 
+def export_to_csv(words: list, output_path: Path):
+    """Export queried words list to a UTF-8 encoded CSV file (with BOM for Excel compatibility)."""
+    with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Simplified", "Pinyin", "Meanings"])
+        for word in words:
+            writer.writerow(
+                [word["simplified"], word["pinyin"], ", ".join(word["meanings"])]
+            )
+    print(f"Successfully exported {len(words)} words to {output_path.resolve()}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Query local HSK vocabulary dataset from the command line."
@@ -96,6 +109,17 @@ def main():
         default=DATA_FILE,
         help="Path to local cache JSON file",
     )
+    parser.add_argument(
+        "--export",
+        choices=["csv"],
+        help="Export format (e.g., csv)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        help="Output filepath for exported data (default: hsk_<version>_level_<level>.csv)",
+    )
 
     args = parser.parse_args()
 
@@ -107,15 +131,20 @@ def main():
         exclusive=not args.inclusive,
     )
 
-    mode = "inclusive" if args.inclusive else "exclusive"
-    print(
-        f"Found {len(words)} words for HSK {args.level} ({args.version.upper()} / {mode}):\n"
-    )
-
     display_words = words[: args.limit] if args.limit else words
-    for i, word in enumerate(display_words, 1):
-        meanings_str = ", ".join(word["meanings"])
-        print(f"{i:3d}. {word['simplified']} [{word['pinyin']}]: {meanings_str}")
+
+    if args.export == "csv":
+        default_filename = f"hsk_{args.version}_level_{args.level}.csv"
+        out_path = args.output if args.output else Path(default_filename)
+        export_to_csv(display_words, out_path)
+    else:
+        mode = "inclusive" if args.inclusive else "exclusive"
+        print(
+            f"Found {len(words)} words for HSK {args.level} ({args.version.upper()} / {mode}):\n"
+        )
+        for i, word in enumerate(display_words, 1):
+            meanings_str = ", ".join(word["meanings"])
+            print(f"{i:3d}. {word['simplified']} [{word['pinyin']}]: {meanings_str}")
 
 
 if __name__ == "__main__":
