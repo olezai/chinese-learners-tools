@@ -14,8 +14,9 @@ FONT_NAME = "ChineseFont"
 
 CHARACTERS = ["我", "喜", "歡", "寫", "漢", "字", "我", "喜", "欢", "写", "汉", "字"]
 
+# Page setup (Letter size)
 PAGE_WIDTH, PAGE_HEIGHT = letter
-MARGIN = 40
+MARGIN = 40 # Margin in points
 COLS = 7
 BOX_SIZE = (PAGE_WIDTH - 2 * MARGIN) / COLS
 
@@ -91,6 +92,7 @@ def generate_pdf(filename, characters):
             current_y = start_y
 
     c.save()
+    print(f"PDF successfully created: {filename}")
 
 
 if __name__ == "__main__":
