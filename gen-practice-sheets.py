@@ -7,7 +7,8 @@ from reportlab.pdfgen import canvas
 
 # ----------------------------------------------------------------------
 # Configuration
-# ----------------------------------------------------------------------
+#  ----------------------------------------------------------------------
+TXT_INPUT_FILE = "input_characters.txt"
 OUTPUT_FILENAME = "chinese_handwriting_practice.pdf"
 FONT_PATH = "NotoSerifSC-Regular.ttf"
 FONT_NAME = "ChineseFont"
@@ -26,6 +27,22 @@ INNER_LINE_COLOR = colors.HexColor("#E5E5E5")
 # Colors for prompt vs. tracing characters
 TEXT_COLOR_MAIN = colors.HexColor("#000000")  # Fully visible
 TEXT_COLOR_TRACE = colors.HexColor("#D3D3D3")  # Faded gray for tracing
+
+
+def load_characters_from_file(filepath):
+    """Reads a text file and extracts non-whitespace characters into a list."""
+    if not os.path.exists(filepath):
+        print(f"Warning: File '{filepath}' not found. Using default fallback characters.")
+        return ["我", "喜", "歡", "寫", "漢", "字"]
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Ignore whitespace, newlines, tabs, and common separator punctuation
+    ignored_chars = set(" \t\r\n,;，；、")
+    char_list = [char for char in content if char not in ignored_chars]
+
+    return char_list
 
 
 def setup_font():
@@ -96,4 +113,5 @@ def generate_pdf(filename, characters):
 
 
 if __name__ == "__main__":
-    generate_pdf(OUTPUT_FILENAME, CHARACTERS)
+    characters = load_characters_from_file(TXT_INPUT_FILE)
+    generate_pdf(OUTPUT_FILENAME, characters)
